@@ -3,6 +3,7 @@
 from arithmetic import add, subtract, multiply, divide
 from history import HistoryManager
 
+
 def execute_command(command, history_manager):
     try:
         if command.startswith("add"):
