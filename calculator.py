@@ -1,80 +1,68 @@
-"""
-Simple Python calculator with history management.
-Supports basic arithmetic operations and saving/loading history using Pandas.
-"""
+import ast
+import logging
+from history_manager import HistoryManager
+from plugin_system import PluginSystem
 
-import pandas as pd
-from history import HistoryManager
-from arithmetic import add, subtract, multiply, divide  # Import arithmetic functions
+class Calculator:
+    def __init__(self):
+        self.logger = self.setup_logging()
+        self.history_manager = HistoryManager()
+        self.plugin_system = PluginSystem()
 
+    def setup_logging(self):
+        # Set up logging configuration
+        logging.basicConfig(level=logging.INFO,
+                            format="%(asctime)s - %(levelname)s - %(message)s")
+        logger = logging.getLogger(__name__)
+        return logger
 
-def show_menu():
-    """Display available commands."""
-    print("Available commands: add, subtract, multiply, divide, history, "
-          "clear, load <filename>, save <filename>, exit")
+    def execute_operation(self, operation):
+        try:
+            # Safely parse the expression
+            parsed_expr = ast.parse(operation, mode='eval')
+            if not all(isinstance(node, (ast.Expression, ast.BinOp, ast.Constant, ast.UnaryOp, ast.operator)) for node in ast.walk(parsed_expr)):
+                raise ValueError("Invalid operation")
 
+            result = eval(compile(parsed_expr, filename="", mode="eval"))
+            # Pass the operation and result separately to add_to_history
+            self.history_manager.add_to_history(operation, result)
+            self.logger.info(f"Executed operation: {operation} = {result}")
+            return result
+        except (SyntaxError, ValueError) as e:
+            self.logger.error(f"Error executing operation: {operation} - {e}")
+            return f"Error: {str(e)}"
 
-def handle_arithmetic(command, history_manager):
-    """Handle arithmetic operations."""
-    parts = command.split()
-    if len(parts) == 3:
-        op, num1, num2 = parts[0], float(parts[1]), float(parts[2])
-
-        if op == "add":
-            result = add(num1, num2)
-        elif op == "subtract":
-            result = subtract(num1, num2)
-        elif op == "multiply":
-            result = multiply(num1, num2)
-        elif op == "divide":
-            result = divide(num1, num2)
-        else:
-            print("Error: Unknown operation.")
-            return
-
-        print(f"Result: {result}")
-        history_manager.add_to_history(command, result)
-    else:
-        print("Error: Invalid command format. Use: operation number1 number2")
-
-
-def main():
-    """
-    Main entry point for the calculator. Handles user input, performs operations, 
-    and manages history.
-    """
-    print("Welcome to the Python Calculator!")
-    print("Type 'menu' to see available commands.")
-
-    history_manager = HistoryManager()
-
-    while True:
-        command = input("Enter command: ").strip().lower()
-
-        if command in ["exit", "quit"]:
-            print("Exiting calculator.")
-            break
-        elif command == "menu":
-            show_menu()
-            continue
-        elif command == "history":
-            print(history_manager.show_history())
-            continue
-        elif command == "clear":
-            print(history_manager.clear_history())
-            continue
-        elif command.startswith("load") or command.startswith("save"):
-            parts = command.split()
-            if len(parts) == 2:
-                if parts[0] == "load":
-                    print(history_manager.load_history(parts[1]))
-                elif parts[0] == "save":
-                    print(history_manager.save_history(parts[1]))
+    def start_repl(self):
+        print("Welcome to the Advanced Python Calculator")
+        while True:
+            user_input = input("Enter operation or 'exit' to quit: ").strip()
+            if user_input.lower() == 'exit':
+                print("Exiting the calculator. Goodbye!")
+                break
+            elif user_input.lower() == 'history':
+                print(self.history_manager.get_history())
+            elif user_input.lower() == 'clear history':
+                self.history_manager.clear_history()
+                print("History cleared.")
+            elif user_input.lower() == 'plugins':
+                print("Available plugins:")
+                print(self.plugin_system.list_plugins())
+            elif user_input.lower() == 'menu':
+                self.show_menu()
             else:
-                print("Error: Invalid command format. Use: load <filename> or save <filename>")
-        else:
-            handle_arithmetic(command, history_manager)
+                result = self.execute_operation(user_input)
+                print(result)
 
+    def show_menu(self):
+        print("\nCalculator Menu:")
+        print("1. Enter an arithmetic operation (e.g., 3 + 4)")
+        print("2. Type 'history' to view calculation history")
+        print("3. Type 'clear history' to clear the history")
+        print("4. Type 'plugins' to list available plugins")
+        print("5. Type 'menu' to display this menu")
+        print("6. Type 'exit' to quit the application")
+        print()
 
 if __name__ == "__main__":
-    main()
+    calculator = Calculator()
+    calculator.start_repl()
