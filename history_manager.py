@@ -1,49 +1,71 @@
-import pandas as pd
+"""
+History Manager Module
+
+This module provides the functionality for managing and storing the history
+of operations in the Advanced Python Calculator.
+"""
+
 from collections import deque
+import pandas as pd
 
 class HistoryManager:
+    """A class to manage the history of operations in the calculator."""
     def __init__(self):
-        self.history = deque(maxlen=100)  # Limit history to 100 records
-        self.df_history = pd.DataFrame(columns=["operation", "result"])
+        """Initializes the history manager with a deque for storing operations."""
+        self.history = deque()
 
     def add_to_history(self, operation, result):
+        """Adds an operation and its result to the history.
+
+        Args:
+            operation (str): The operation performed.
+            result: The result of the operation.
+        """
         try:
-            self.history.append((operation, result))
-            new_entry = pd.DataFrame([(operation, result)], columns=["operation", "result"])
-            self.df_history = pd.concat([self.df_history, new_entry], ignore_index=True)
-        except Exception as e:
-            print(f"Error adding to history: {e}")
+            entry = {'operation': operation, 'result': result}
+            self.history.append(entry)
+        except (TypeError, ValueError) as e:
+            print(f"Failed to add entry to history: {e}")
 
     def get_history(self):
-        if not self.history:
-            return "History is empty."
-        return "\n".join([f"{record[0]} = {record[1]}" for record in self.history])
+        """Returns the history of operations as a DataFrame.
 
-    def show_history(self):
-        if not self.history:
-            print("History is empty.")
-        else:
-            for record in self.history:
-                print(f"{record[0]} = {record[1]}")
-
-    def load_history_from_file(self, filename):
+        Returns:
+            pd.DataFrame: A DataFrame representation of the operation history.
+        """
         try:
-            df = pd.read_csv(filename)
-            for _, row in df.iterrows():
-                self.history.append((row['operation'], row['result']))
-            self.df_history = pd.concat([self.df_history, df], ignore_index=True)
-            print(f"Loaded history from {filename}")
-        except Exception as e:
-            print(f"Error loading history: {e}")
-
-    def save_history_to_file(self, filename):
-        try:
-            self.df_history.to_csv(filename, index=False)
-            print(f"Saved history to {filename}")
-        except Exception as e:
-            print(f"Error saving history: {e}")
+            return pd.DataFrame(list(self.history))
+        except pd.errors.EmptyDataError as e:
+            print(f"Failed to generate history DataFrame: {e}")
+            return pd.DataFrame()
 
     def clear_history(self):
-        self.history.clear()
-        self.df_history = pd.DataFrame(columns=["operation", "result"])
-        print("Cleared history")
+        """Clears the history of operations."""
+        try:
+            self.history.clear()
+        except RuntimeError as e:
+            print(f"Failed to clear history: {e}")
+
+    def save_history_to_csv(self, filename):
+        """Saves the history to a CSV file.
+
+        Args:
+            filename (str): The name of the file to save the history.
+        """
+        try:
+            df = pd.DataFrame(list(self.history))
+            df.to_csv(filename, index=False)
+        except (OSError, pd.errors.EmptyDataError) as e:
+            print(f"Failed to save history to CSV: {e}")
+
+    def load_history_from_csv(self, filename):
+        """Loads history from a CSV file.
+
+        Args:
+            filename (str): The name of the file to load the history from.
+        """
+        try:
+            df = pd.read_csv(filename)
+            self.history = deque(df.to_dict('records'))
+        except (OSError, pd.errors.EmptyDataError, pd.errors.ParserError) as e:
+            print(f"Failed to load history from CSV: {e}")
