@@ -1,15 +1,10 @@
-"""
-History Manager Module
-
-This module provides the functionality for managing and storing the history
-of operations in the Advanced Python Calculator.
-"""
-
 from collections import deque
 import pandas as pd
 
+
 class HistoryManager:
     """A class to manage the history of operations in the calculator."""
+
     def __init__(self):
         """Initializes the history manager with a deque for storing operations."""
         self.history = deque()
@@ -22,22 +17,25 @@ class HistoryManager:
             result: The result of the operation.
         """
         try:
-            entry = {'operation': operation, 'result': result}
+            entry = {"operation": operation, "result": result}
             self.history.append(entry)
         except (TypeError, ValueError) as e:
             print(f"Failed to add entry to history: {e}")
 
     def get_history(self):
-        """Returns the history of operations as a DataFrame.
+        """Returns the history of operations as a formatted string.
 
         Returns:
-            pd.DataFrame: A DataFrame representation of the operation history.
+            str: A string representation of the operation history.
         """
-        try:
-            return pd.DataFrame(list(self.history))
-        except pd.errors.EmptyDataError as e:
-            print(f"Failed to generate history DataFrame: {e}")
-            return pd.DataFrame()
+        if not self.history:
+            return "History is empty"
+
+        history_str = []
+        for entry in self.history:
+            history_str.append(f"{entry['operation']} = {entry['result']}")
+
+        return "\n".join(history_str)
 
     def clear_history(self):
         """Clears the history of operations."""
@@ -66,6 +64,6 @@ class HistoryManager:
         """
         try:
             df = pd.read_csv(filename)
-            self.history = deque(df.to_dict('records'))
+            self.history = deque(df.to_dict("records"))
         except (OSError, pd.errors.EmptyDataError, pd.errors.ParserError) as e:
             print(f"Failed to load history from CSV: {e}")

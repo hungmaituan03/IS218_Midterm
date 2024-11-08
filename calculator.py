@@ -10,8 +10,10 @@ import logging
 from history_manager import HistoryManager
 from plugin_system import PluginSystem
 
+
 class Calculator:
     """A class representing an advanced calculator with REPL and plugin capabilities."""
+
     def __init__(self):
         """Initializes the Calculator with logging, history management, and plugin system."""
         self.logger = self.setup_logging()
@@ -21,8 +23,7 @@ class Calculator:
     def setup_logging(self):
         """Sets up the logging configuration."""
         logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s - %(levelname)s - %(message)s"
+            level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
         )
         return logging.getLogger(__name__)
 
@@ -41,7 +42,13 @@ class Calculator:
             if not all(
                 isinstance(
                     node,
-                    (ast.Expression, ast.BinOp, ast.Constant, ast.UnaryOp, ast.operator),
+                    (
+                        ast.Expression,
+                        ast.BinOp,
+                        ast.Constant,
+                        ast.UnaryOp,
+                        ast.operator,
+                    ),
                 )
                 for node in ast.walk(parsed_expr)
             ):
@@ -53,7 +60,7 @@ class Calculator:
             self.logger.info("Executed operation: %s = %s", operation, result)
             return result
         except (SyntaxError, ValueError) as e:
-            self.logger.error("Error executing operation: %s - %s", operation, e)
+            self.logger.error("Error executing operation")
             return f"Error: {str(e)}"
 
     def start_repl(self):
@@ -70,7 +77,7 @@ class Calculator:
                 self.history_manager.clear_history()
                 print("History cleared.")
             elif user_input.lower() == "plugins":
-                if hasattr(self.plugin_system, 'list_plugins'):
+                if hasattr(self.plugin_system, "list_plugins"):
                     print("Available plugins:")
                     print(self.plugin_system.list_plugins())
             elif user_input.lower() == "menu":
@@ -89,6 +96,7 @@ class Calculator:
         print("5. Type 'menu' to display this menu")
         print("6. Type 'exit' to quit the application")
         print()
+
 
 if __name__ == "__main__":
     calculator = Calculator()
