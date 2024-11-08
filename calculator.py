@@ -53,7 +53,7 @@ class Calculator:
             self.logger.info("Executed operation: %s = %s", operation, result)
             return result
         except (SyntaxError, ValueError) as e:
-            self.logger.error("Error executing operation: %s - %s", operation, e)
+            self.logger.error("Error executing operation")
             return f"Error: {str(e)}"
 
     def start_repl(self):
