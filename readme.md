@@ -101,3 +101,4 @@ except (SyntaxError, ValueError) as e:
 ```
 **Explanation**:
 - Safely attempts the operation and catches exceptions to handle errors gracefully.
+- Presentation link: https://drive.google.com/file/d/16jr-jSHZFNH2_gi195HaSq-kzbjyWoXq/view?usp=sharing
