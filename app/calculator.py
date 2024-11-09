@@ -1,7 +1,7 @@
 import ast
 import logging
-from .history_manager import HistoryManager
-from .plugin_system import PluginSystem
+from history_manager import HistoryManager
+from plugin_system import PluginSystem
 
 class Calculator:
     """A class representing an advanced calculator with REPL and plugin capabilities."""
