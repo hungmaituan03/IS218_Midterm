@@ -1,10 +1,3 @@
-"""
-Advanced Python Calculator Module
-
-This module implements a calculator that supports basic arithmetic operations,
-history management, and a plugin system. It includes a command-line REPL interface.
-"""
-
 import ast
 import logging
 from history_manager import HistoryManager
@@ -26,6 +19,48 @@ class Calculator:
         )
         return logging.getLogger(__name__)
 
+    def safe_eval(self, expr):
+        """Safely evaluates an arithmetic expression."""
+        try:
+            # Parse the expression into AST
+            parsed_expr = ast.parse(expr, mode='eval')
+
+            # Ensure only safe operations (numbers and arithmetic operations)
+            if not all(
+                isinstance(node, (ast.Expression, ast.BinOp, ast.Num, ast.UnaryOp, ast.operator))
+                for node in ast.walk(parsed_expr)
+            ):
+                raise ValueError("Invalid operation")
+
+            # Function to evaluate AST nodes
+            def eval_node(node):
+                if isinstance(node, ast.Num):  # A number
+                    return node.n
+                if isinstance(node, ast.BinOp):  # Binary operation
+                    left = eval_node(node.left)
+                    right = eval_node(node.right)
+                    if isinstance(node.op, ast.Add):
+                        return left + right
+                    if isinstance(node.op, ast.Sub):
+                        return left - right
+                    if isinstance(node.op, ast.Mult):
+                        return left * right
+                    if isinstance(node.op, ast.Div):
+                        return left / right
+                    raise ValueError("Unsupported operator")
+                if isinstance(node, ast.UnaryOp):  # Unary operation (e.g., negation)
+                    operand = eval_node(node.operand)
+                    if isinstance(node.op, ast.USub):
+                        return -operand
+                    raise ValueError("Unsupported unary operator")
+                raise ValueError("Unsupported AST node")
+
+            # Evaluate the expression
+            return eval_node(parsed_expr.body)
+        except (ValueError, TypeError) as e:
+            self.logger.error("Error evaluating expression: %s", e)
+            return f"Error: {str(e)}"
+
     def execute_operation(self, operation):
         """Executes an arithmetic operation and logs the result.
 
@@ -36,23 +71,13 @@ class Calculator:
             The result of the operation or an error message if the operation is invalid.
         """
         try:
-            # Safely parse the expression
-            parsed_expr = ast.parse(operation, mode="eval")
-            if not all(
-                isinstance(
-                    node,
-                    (ast.Expression, ast.BinOp, ast.Constant, ast.UnaryOp, ast.operator),
-                )
-                for node in ast.walk(parsed_expr)
-            ):
-                raise ValueError("Invalid operation")
-
-            # Use eval with caution; ensure inputs are from trusted sources
-            result = eval(compile(parsed_expr, filename="", mode="eval"))
-            self.history_manager.add_to_history(operation, result)
-            self.logger.info("Executed operation: %s = %s", operation, result)
+            # Safely evaluate the expression without using eval
+            result = self.safe_eval(operation)
+            if isinstance(result, (int, float)):
+                self.history_manager.add_to_history(operation, result)
+                self.logger.info("Executed operation: %s = %s", operation, result)
             return result
-        except (SyntaxError, ValueError) as e:
+        except ValueError as e:
             self.logger.error("Error executing operation: %s - %s", operation, e)
             return f"Error: {str(e)}"
 
