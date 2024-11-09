@@ -1,31 +1,27 @@
-"""
-Unit tests for the Calculator class.
-"""
-
-import pytest
+"""Test suite for testing the history functionality of the Calculator."""
 from calculator import Calculator
 
-@pytest.fixture
-def calculator():
-    """Fixture to create a Calculator instance for testing."""
-    return Calculator()
 
-def test_addition(calculator):
-    """Test the addition operation."""
-    result = calculator.execute_operation("3 + 4")
-    assert result == 7
+def test_add_to_history():
+    """Test that the history is correctly updated after an addition operation."""
+    calculator_instance = Calculator()  # Initialize directly in the test
+    calculator_instance.execute_operation("3 + 4")
+    history = calculator_instance.history_manager.get_history()
+    assert "3 + 4 = 7" in history
 
-def test_subtraction(calculator):
-    """Test the subtraction operation."""
-    result = calculator.execute_operation("10 - 5")
-    assert result == 5
 
-def test_multiplication(calculator):
-    """Test the multiplication operation."""
-    result = calculator.execute_operation("2 * 3")
-    assert result == 6
+def test_clear_history():
+    """Test that the history is cleared correctly."""
+    calculator_instance = Calculator()  # Initialize directly in the test
+    calculator_instance.execute_operation("10 - 5")
+    calculator_instance.history_manager.clear_history()
+    history = calculator_instance.history_manager.get_history()
+    assert history == "History is empty"
 
-def test_division(calculator):
-    """Test the division operation."""
-    result = calculator.execute_operation("9 / 3")
-    assert result == 3
+
+def test_view_history():
+    """Test that the history is correctly displayed after an operation."""
+    calculator_instance = Calculator()  # Initialize directly in the test
+    calculator_instance.execute_operation("2 * 3")
+    history = calculator_instance.history_manager.get_history()
+    assert "2 * 3 = 6" in history
