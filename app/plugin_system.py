@@ -1,7 +1,6 @@
 import importlib
 from pathlib import Path
 
-
 class PluginSystem:
     """A class for managing and executing plugins in the calculator.""" 
     def __init__(self):
