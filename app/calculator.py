@@ -1,7 +1,7 @@
 import ast
 import logging
-from history_manager import HistoryManager
-from plugin_system import PluginSystem
+from .history_manager import HistoryManager
+from .plugin_system import PluginSystem
 
 class Calculator:
     """A class representing an advanced calculator with REPL and plugin capabilities."""
@@ -25,17 +25,16 @@ class Calculator:
             # Parse the expression into AST
             parsed_expr = ast.parse(expr, mode='eval')
 
+            # Define allowed node types
+            allowed_types = (ast.Expression, ast.BinOp, ast.Constant, ast.UnaryOp, ast.operator)
             # Ensure only safe operations (numbers and arithmetic operations)
-            if not all(
-                isinstance(node, (ast.Expression, ast.BinOp, ast.Num, ast.UnaryOp, ast.operator))
-                for node in ast.walk(parsed_expr)
-            ):
+            if not all(isinstance(node, allowed_types) for node in ast.walk(parsed_expr)):
                 raise ValueError("Invalid operation")
 
             # Function to evaluate AST nodes
             def eval_node(node):
-                if isinstance(node, ast.Num):  # A number
-                    return node.n
+                if isinstance(node, ast.Constant):  # A number
+                    return node.value
                 if isinstance(node, ast.BinOp):  # Binary operation
                     left = eval_node(node.left)
                     right = eval_node(node.right)
