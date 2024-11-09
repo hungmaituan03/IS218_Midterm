@@ -1,0 +1,14 @@
+[MASTER]
+extension-pkg-whitelist=
+ignore=CVS
+max-args=5
+disable=missing-docstring,too-few-public-methods
+
+[MESSAGES CONTROL]
+disable=unused-import,too-many-arguments
+
+[TYPECHECK]
+generated-members=numpy.*,torch.*
+
+[REPORTS]
+output-format=text
